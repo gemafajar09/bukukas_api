@@ -1,0 +1,47 @@
+version: '3'
+
+tasks:
+  gomod:
+    desc: "Initialize and tidy Go modules"
+    cmds:
+      - go mod init go-project || echo "module already initialized"
+      - go mod tidy
+
+  deps:
+    desc: "Download required dependencies"
+    cmds:
+      - go get github.com/joho/godotenv
+      - go get github.com/spf13/viper
+      - go get gorm.io/gorm
+      - go get go.uber.org/zap
+      - go get github.com/gin-contrib/cors
+      - go get gorm.io/driver/mysql
+      - go get github.com/gin-gonic/gin
+      - go get github.com/go-playground/validator/v10
+      - go get github.com/golang-jwt/jwt/v5
+      - go get golang.org/x/crypto/bcrypt
+
+  run:
+    desc: "Run the main Go server"
+    cmds:
+      - go run cmd/server/main.go
+
+  test:
+    desc: "Run all tests"
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: "Run golangci-lint"
+    cmds:
+      - golangci-lint run
+
+  migrate-up:
+    desc: "Run goose migrations"
+    cmds:
+      - goose -dir migrations mysql "user=root password= dbname=go_portofolio sslmode=disable" up
+
+  swag:
+    desc: "Generate Swagger docs"
+    cmds:
+      - swag init -g cmd/server/main.go

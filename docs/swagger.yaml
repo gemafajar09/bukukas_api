@@ -1,0 +1,271 @@
+basePath: /
+definitions:
+  domain.CashCategory:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      transactions:
+        description: Relasi
+        items:
+          $ref: '#/definitions/domain.CashTransaction'
+        type: array
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.CashTransaction:
+    properties:
+      amount:
+        type: number
+      category:
+        allOf:
+        - $ref: '#/definitions/domain.CashCategory'
+        description: Relasi
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      payment_method:
+        type: string
+      reference_id:
+        type: integer
+      transaction_date:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/domain.User'
+    type: object
+  domain.User:
+    properties:
+      cash_transactions:
+        items:
+          $ref: '#/definitions/domain.CashTransaction'
+        type: array
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handler.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Ini adalah contoh API dengan Otentikasi JWT di Go menggunakan Swagger
+  title: BUKU KAS API
+  version: "1.0"
+paths:
+  /api/get-users:
+    get:
+      description: Ambil semua pengguna dari database
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Ambil semua user
+      tags:
+      - users
+  /api/profile:
+    get:
+      description: Ambil data user (requires JWT token)
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - users
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Otentikasi pengguna dan dapatkan token JWT
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Buat akun pengguna baru
+      parameters:
+      - description: Register request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RegisterRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Daftarkan pengguna baru
+      tags:
+      - auth
+  /cash-balance:
+    get:
+      description: Menghitung dan menampilkan saldo kas untuk tanggal tertentu
+      parameters:
+      - description: Tanggal (YYYY-MM-DD)
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data saldo kas harian
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat saldo kas harian
+      tags:
+      - Cash
+  /cash-categories:
+    get:
+      description: Menampilkan semua kategori transaksi kas (uang masuk / keluar)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List kategori kas
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Ambil daftar kategori kas
+      tags:
+      - Cash
+  /cash-transactions:
+    get:
+      description: Ambil daftar transaksi kas berdasarkan rentang tanggal
+      parameters:
+      - description: Tanggal mulai (YYYY-MM-DD)
+        in: query
+        name: start
+        type: string
+      - description: Tanggal akhir (YYYY-MM-DD)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List transaksi
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Ambil daftar transaksi kas
+      tags:
+      - Cash
+    post:
+      consumes:
+      - application/json
+      description: Tambah transaksi uang masuk atau keluar (requires JWT token)
+      parameters:
+      - description: Data transaksi kas
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CashTransaction'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Transaction recorded successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Tambah transaksi kas
+      tags:
+      - Cash
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
