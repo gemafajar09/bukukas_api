@@ -54,21 +54,22 @@ func NewRouter(cfg config.Config, db *gorm.DB) *gin.Engine {
 	userHandler := handler.NewUserHandler(deps.UserUsecase)
 	cashHandler := handler.NewCashHandler(deps.CashUsecase)
 
-	// Auth routes group
+	// Auth router group
 	authGroup := r.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
 	}
 
+	// API router group
 	apiGroup := r.Group("/api")
 	apiGroup.Use(middleware.JWTAuthMiddleware(cfg.JWT))
 	{
-		// User routes
+		// user router
 		apiGroup.GET("/profile", userHandler.GetProfile)
 		apiGroup.GET("/get-users", userHandler.GetUsers)
 
-		// get cash transaction
+		// cash router
 		apiGroup.POST("/cash/transactions", cashHandler.CreateTransaction)
 		apiGroup.GET("/cash/transactions", cashHandler.GetTransactions)
 		apiGroup.GET("/cash/balance", cashHandler.GetBalance)

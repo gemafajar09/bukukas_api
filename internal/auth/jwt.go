@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// CustomClaims untuk menyimpan lebih dari satu informasi
 type CustomClaims struct {
 	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
@@ -16,12 +15,9 @@ type CustomClaims struct {
 }
 
 func GenerateToken(userID uint, email string) (string, error) {
-	// Secret key untuk JWT
 	jwtKey := []byte(viper.GetString("JWT_SECRET"))
-	// Atur waktu expired token
 	expirationTime := time.Now().Add(60 * time.Minute)
 
-	// Isi klaim dengan user ID dan email
 	claims := &CustomClaims{
 		UserID: userID,
 		Email:  email,
@@ -32,7 +28,6 @@ func GenerateToken(userID uint, email string) (string, error) {
 		},
 	}
 
-	// Buat token JWT dengan klaim
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
